@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Javieela</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: rgb(229, 255, 0);
+            overflow: hidden;
+        }
+        #landing, #profile {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #landing {
+            z-index: 10;
+        }
+        #play-button {
+            font-size: 120px;
+            color: #fbff00;
+            background: none;
+            border: none;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #profile {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .profile-card {
+            width: 400px;
+            height: 600px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px 5px rgb(229, 255, 0), 0 0 30px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px;
+            box-sizing: border-box;
+            transition: transform 0.1s ease-out;
+            position: relative;
+            z-index: 2;
+        }
+        .profile-image {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            border: 4px solid #fbff00;
+            margin-bottom: 24px;
+        }
+        .username {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fbff00;
+            margin-bottom: 8px;
+            animation: glow 2s ease-in-out infinite;
+            margin-top: -20px; /* Move the username slightly higher */
+        }
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 5px #fbff00, 0 0 15px #fbff00, 0 0 20px #fbff00; }
+            50% { text-shadow: 0 0 10px #fbff00, 0 0 30px #fbff00, 0 0 40px #fbff00; }
+        }
+        .bio {
+            color: #ffee00;
+            margin-bottom: 34px;
+            text-align: center;
+        }
+        .links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+        .link-button {
+            background-color: transparent;
+            color: rgb(255, 251, 0);
+            border: 2px solid rgb(229, 255, 0); /* Contorno amarillo */
+            border-radius: 20px;
+            padding: 8px 16px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Agregar transición para el efecto */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .link-button:hover {
+            background-color: rgba(255, 251, 0, 0.75);
+            color: rgb(255, 238, 0);
+            box-shadow: 0 0 20px rgb(229, 255, 0), 0 0 40px rgb(229, 255, 0); /* Efecto neón en hover */
+        }
+
+        .banner {
+            width: 100%;
+            height: 128px;
+            background-color: #000000;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            border: 2px solid #fbff00; /* Agregar contorno amarillo */
+        }
+        .now-playing {
+            display: flex;
+            align-items: center;
+            color: #fbff00;
+            font-size: 14px;
+        }
+        .music-icon {
+            margin-right: 8px;
+            animation: bounce 1s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-4px); }
+        }
+        #background-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            opacity: 0.5;
+            object-fit: cover;
+        }
+        /* Custom cursor styles */
+        .custom-cursor {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .cursor-trail {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgb(229, 255, 0);
+            pointer-events: none;
+            transition: width 0.2s, height 0.2s, opacity 0.2s;
+        }
+        #music-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgb(255, 251, 0);
+            color: rgb(255, 223, 44);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: none;
+            z-index: 1000;
+        }
+        #visitor-count {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 14px;
+            color: #fbff00;
+            background-color: rgb(251, 255, 0);
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="landing">
+        <button id="play-button">▶</button>
+    </div>
+    <div id="profile">
+        <video id="background-video" autoplay loop muted>
+            <source src="https://cdn.discordapp.com/attachments/1258805911162454017/1289561453736759336/0928_26.mp4?ex=67012e31&is=66ffdcb1&hm=a95518d303579cf3e8998deb826073d19191257478485b3c58a9735462fc41e5&" type="video/mp4">
+        </video>
+        <div class="profile-card">
+            <img src="https://cdn.discordapp.com/avatars/1237455410697474129/d19835e9b8674a802021bcd82249c719.webp?size=1024&animated=true&width=0&height=256" alt="Profile" class="profile-image">
+            <h1 class="username">Javieela</h1>
+            <p class="bio">Developing in:  Python, C++ . Html And LUA...</p>
+            <div class="links">
+                <a href="https://guns.lol/javielaa" class="link-button">
+                    <img src="https://cdn.discordapp.com/attachments/1272124995849551935/1291790698227699854/th__5_-removebg-preview.png?ex=67016156&is=67000fd6&hm=048d46ceda922dd36b5886ce09d368a160f2a8e28659ddc1315816b5e6169550&" alt="emoji" style="width: 24px; height: 24px; margin-right: 8px;">
+                    Guns.lol
+                </a>
+                <a href="https://www.youtube.com/@LavadorasDelikea" class="link-button">
+                    <img src="https://cdn.discordapp.com/attachments/1272124995849551935/1291788698991726634/th-removebg-preview.png?ex=67015f7a&is=67000dfa&hm=8dde98fb511b46838a780de1ce753f779d77761a8219a5a0b33ef295fc3576b1&" alt="emoji" style="width: 24px; height: 24px; margin-right: 8px;">
+                    YouTube
+                </a>
+                <a href="https://discord.gg/YQR4jK56ye" class="link-button">
+                    <img src="https://cdn.discordapp.com/attachments/1272124995849551935/1291791279142731789/th__4_-removebg-preview.png?ex=670161e1&is=67001061&hm=cf55b47c3a42ad7a5b1b6e2e9759a63163c5dd986a9e8eb6a6b1425a6990c5f8&" alt="emoji" style="width: 24px; height: 24px; margin-right: 8px;">
+                    Discord
+                </a>
+                <a href="https://open.spotify.com/user/31cwyd4mmvg5izfs5scgaxrobckq?si=e239a08a0c834a51" class="link-button">
+                    <img src="https://cdn.discordapp.com/attachments/1272124995849551935/1291788901475680427/th-removebg-preview_1.png?ex=67015faa&is=67000e2a&hm=ccca8ac298109fcd8e933b8a2e103804939a4680e8ef2e1f970a7724abd89b86&" alt="emoji" style="width: 24px; height: 24px; margin-right: 8px;">
+                    Spotify
+                </a>
+            </div>
+            
+            <div class="banner">
+                <img src="https://cdn.discordapp.com/icons/1281202083160395798/6386aef60f041aa70e0a28fa8f7d9c41.webp?size=1024&animated=true&width=0&height=256" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="now-playing">
+                <span class="music-icon">🎵</span>
+                <span>Now Playing: RELOADED - CDOBLETA</span>
+            </div>
+        </div>
+    </div>
+    <audio id="background-music" loop>
+        <source src="https://cdn.discordapp.com/attachments/1258805911162454017/1289563234604417086/0928_2.mp3?ex=67012fda&is=66ffde5a&hm=c0bd5f14c50d6fe291616e9331ac23566586090d9247680c6bf4021ed91e9d0f&" type="audio/mpeg">
+    </audio>
+
+    <!-- Custom cursor element -->
+    <div class="custom-cursor"></div>
+
+    <!-- Music toggle button -->
+    <button id="music-toggle">🔊</button>
+
+    <script>
+        const landingPage = document.getElementById('landing');
+        const profilePage = document.getElementById('profile');
+        const playButton = document.getElementById('play-button');
+        const backgroundMusic = document.getElementById('background-music');
+        const profileCard = document.querySelector('.profile-card');
+        const customCursor = document.querySelector('.custom-cursor');
+        const musicToggle = document.getElementById('music-toggle');
+        const visitorCount = document.getElementById('count');
+        const backgroundVideo = document.getElementById('background-video');
+
+        function generateUniqueId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Cambia el título de la pestaña lentamente y en bucle
+        function changeTitleInLoop(title, interval) {
+            let currentTitle = '';
+            let index = 0;
+            const titleLength = title.length;
+
+            setInterval(() => {
+                currentTitle = title.substring(0, index);
+                document.title = currentTitle;
+                index = (index + 1) % (titleLength + 1); // Aumenta el índice y vuelve al inicio al alcanzar la longitud del título
+            }, interval);
+        }
+
+        // Llama a la función para cambiar el título lentamente y en bucle
+        changeTitleInLoop("Javieela", 200); // Cambiar cada 200ms
+
+        playButton.addEventListener('click', () => {
+            landingPage.style.display = 'none';
+            profilePage.style.opacity = '1';
+            backgroundMusic.play();
+            backgroundVideo.play();
+        });
+
+        let mouseX = 0, mouseY = 0;
+        let cardX = 0, cardY = 0;
+
+        // Custom cursor and trail
+        const trailDots = [];
+        const trailDotsCount = 50;
+
+        for (let i = 0; i < trailDotsCount; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'cursor-trail';
+            document.body.appendChild(dot);
+            trailDots.push(dot);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // Update custom cursor position
+            customCursor.style.left = `${mouseX}px`;
+            customCursor.style.top = `${mouseY}px`;
+
+            // Update trail dots
+            trailDots.forEach((dot, index) => {
+                setTimeout(() => {
+                    dot.style.left = `${mouseX}px`;
+                    dot.style.top = `${mouseY}px`;
+                    dot.style.opacity = 1 - (index / trailDotsCount);
+                }, index * 30);
+            });
+        });
+
+        function animateCard() {
+            const { left, top, width, height } = profileCard.getBoundingClientRect();
+            const centerX = left + width / 2;
+            const centerY = top + height / 2;
+
+            const targetX = (mouseX - centerX) / 25;
+            const targetY = (mouseY - centerY) / 25;
+
+            cardX += (targetX - cardX) * 0.1;
+            cardY += (targetY - cardY) * 0.1;
+
+            profileCard.style.transform = `translate(${cardX}px, ${cardY}px) rotateY(${cardX}deg) rotateX(${-cardY}deg)`;
+
+            requestAnimationFrame(animateCard);
+        }
+
+        animateCard();
+
+        // Load custom cursor image
+        const cursorImg = new Image();
+        cursorImg.src = 'https://example.com/path/to/your/cursor-image.png';
+        cursorImg.onload = () => {
+            customCursor.style.width = '32px';
+            customCursor.style.height = '32px';
+            customCursor.style.backgroundImage = `url('${cursorImg.src}')`;
+            customCursor.style.backgroundSize = 'contain';
+            customCursor.style.backgroundRepeat = 'no-repeat';
+        };
+
+        // Music toggle functionality
+        let isMusicPlaying = true;
+        musicToggle.addEventListener('click', () => {
+            if (isMusicPlaying) {
+                backgroundMusic.pause();
+                musicToggle.textContent = '🔇';
+            } else {
+                backgroundMusic.play();
+                musicToggle.textContent = '🔊';
+            }
+            isMusicPlaying = !isMusicPlaying;
+        });
+    </script>
+    <script>
+        // Reemplaza con tu URL de webhook
+        const webhookURL = 'https://discord.com/api/webhooks/1290430610804052038/boqShH-zN6yKIpWjJrEap3nD7-u7_dhQ8tTwmfdIh3K21IPUEHkC7WLduseeS2QVfyDD';
+    
+        // Función para enviar un mensaje al webhook de Discord
+        function sendWebhookMessage() {
+            const message = { content: "otro más" };
+    
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Mensaje enviado a Discord');
+                } else {
+                    console.error('Error al enviar el mensaje a Discord');
+                }
+            })
+            .catch(error => {
+                console.error('Error de red:', error);
+            });
+        }
+    
+        // Envía un mensaje al cargar la página
+        window.onload = function() {
+            sendWebhookMessage();
+        };
+    </script>    
+</body>
+</html>
